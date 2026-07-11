@@ -46,7 +46,7 @@
   .cav-btn-primary:disabled, .cav-btn-secondary:disabled { opacity: 0.55; cursor: not-allowed; }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/index.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -450,20 +450,38 @@ function generateDocxBlob() {
     ]
   });
 
+  var noticeRow = new TableRow({
+    children: [
+      new TableCell({
+        width: { size: 11000, type: WidthType.DXA },
+        columnSpan: 6,
+        borders: cellBorders,
+        margins: { top: 90, bottom: 90, left: 80, right: 80 },
+        children: [ new Paragraph({
+          alignment: AlignmentType.LEFT,
+          children: [ new TextRun({
+            text: 'Do not honour any cheque presented to you outside this list of beneficiaries or an earlier one.',
+            bold: true, size: 18, color: '1A2332',
+          }) ]
+        }) ]
+      }),
+    ]
+  });
+
   var chequeTable = new Table({
     width: { size: 11000, type: WidthType.DXA },
     columnWidths: [1100, 1300, 2300, 1500, 3800, 1000],
-    rows: [headerRow].concat(dataRows, [totalRow]),
+    rows: [headerRow].concat(dataRows, [totalRow, noticeRow]),
   });
 
-  // Letterhead: two-column borderless table (company text left, logo right)
+  // Letterhead: three-column borderless table (address left, contact centered, logo alone on right)
   var letterheadTable = new Table({
     width: { size: 11000, type: WidthType.DXA },
-    columnWidths: [6000, 5000],
+    columnWidths: [3800, 3800, 3400],
     borders: noBorders(BorderStyle),
     rows: [ new TableRow({ children: [
       new TableCell({
-        width: { size: 6000, type: WidthType.DXA },
+        width: { size: 3800, type: WidthType.DXA },
         borders: noBorders(BorderStyle),
         verticalAlign: VerticalAlign.CENTER,
         children: [
@@ -477,7 +495,17 @@ function generateDocxBlob() {
         ],
       }),
       new TableCell({
-        width: { size: 5000, type: WidthType.DXA },
+        width: { size: 3800, type: WidthType.DXA },
+        borders: noBorders(BorderStyle),
+        verticalAlign: VerticalAlign.CENTER,
+        children: [
+          new Paragraph({ alignment: AlignmentType.CENTER, children: [ new TextRun({ text: 'T   +00233 0 302 502064', size: 17 }) ] }),
+          new Paragraph({ alignment: AlignmentType.CENTER, children: [ new TextRun({ text: 'F   +00233 0 302 502064', size: 17 }) ] }),
+          new Paragraph({ alignment: AlignmentType.CENTER, children: [ new TextRun({ text: 'E   vfghana@visionfundghana.org', size: 17 }) ] }),
+        ],
+      }),
+      new TableCell({
+        width: { size: 3400, type: WidthType.DXA },
         borders: noBorders(BorderStyle),
         verticalAlign: VerticalAlign.CENTER,
         children: [
@@ -485,10 +513,6 @@ function generateDocxBlob() {
             new ImageRun({ type: 'jpg', data: logoBytes, transformation: { width: 150, height: 45 },
               altText: { title: 'VisionFund Ghana logo', description: 'VisionFund Ghana logo', name: 'Logo' } })
           ] }),
-          new Paragraph({ text: '' }),
-          new Paragraph({ alignment: AlignmentType.RIGHT, children: [ new TextRun({ text: 'T   +00233 0 302 502064', size: 17 }) ] }),
-          new Paragraph({ alignment: AlignmentType.RIGHT, children: [ new TextRun({ text: 'F   +00233 0 302 502064', size: 17 }) ] }),
-          new Paragraph({ alignment: AlignmentType.RIGHT, children: [ new TextRun({ text: 'E   vfghana@visionfundghana.org', size: 17 }) ] }),
         ],
       }),
     ] }) ]
@@ -499,7 +523,7 @@ function generateDocxBlob() {
 
   children.push(new Paragraph({
     text: '',
-    spacing: { before: 160, after: 220 },
+    spacing: { before: 260, after: 220 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: 'F5A623', space: 8 } },
   }));
 
@@ -538,16 +562,16 @@ function generateDocxBlob() {
       new TableRow({ children: [
         new TableCell({ width: { size: 5500, type: WidthType.DXA }, borders: noBorders(BorderStyle),
           children: [
-            new Paragraph({ children: [ new ImageRun({ type: 'png', data: sigBytes, transformation: { width: 90, height: 34 },
+            new Paragraph({ alignment: AlignmentType.LEFT, children: [ new ImageRun({ type: 'png', data: sigBytes, transformation: { width: 90, height: 34 },
               altText: { title: 'Signature', description: 'Signature', name: 'Signature' } }) ] }),
-            new Paragraph({ children: [ new TextRun({ text: state.preparedBy, bold: true, size: 20 }) ] }),
-            new Paragraph({ children: [ new TextRun({ text: state.preparedByTitle, size: 18, color: '4A5566' }) ] }),
+            new Paragraph({ alignment: AlignmentType.LEFT, children: [ new TextRun({ text: state.preparedBy, bold: true, size: 20 }) ] }),
+            new Paragraph({ alignment: AlignmentType.LEFT, children: [ new TextRun({ text: state.preparedByTitle, size: 18, color: '4A5566' }) ] }),
           ] }),
         new TableCell({ width: { size: 5500, type: WidthType.DXA }, borders: noBorders(BorderStyle),
           children: [
-            new Paragraph({ children: [ new TextRun({ text: 'Approved by:', size: 18 }) ] }),
-            new Paragraph({ children: [ new TextRun({ text: state.approvedBy, bold: true, size: 20 }) ] }),
-            new Paragraph({ children: [ new TextRun({ text: state.approvedByTitle, size: 18, color: '4A5566' }) ] }),
+            new Paragraph({ alignment: AlignmentType.RIGHT, children: [ new TextRun({ text: 'Approved by:', size: 18 }) ] }),
+            new Paragraph({ alignment: AlignmentType.RIGHT, children: [ new TextRun({ text: state.approvedBy, bold: true, size: 20 }) ] }),
+            new Paragraph({ alignment: AlignmentType.RIGHT, children: [ new TextRun({ text: state.approvedByTitle, size: 18, color: '4A5566' }) ] }),
           ] }),
       ] }),
     ]
@@ -612,29 +636,31 @@ function generatePdfDoc() {
   doc.setFont('helvetica', 'bold');
   doc.text('www.visionfundghana.org', margin, y);
 
-  var rightX = pageWidth - margin - 190;
-  var ry = 40;
-  doc.setFont('helvetica', 'bold');
+  // Centered contact info (T / F / E)
+  var centerX = pageWidth / 2;
+  var ry = 44;
   doc.setFontSize(9.5);
-  doc.text('T', rightX, ry);
+  doc.setFont('helvetica', 'bold');
+  doc.text('T   ', centerX - 78, ry);
   doc.setFont('helvetica', 'normal');
-  doc.text('+00233 0 302 502064', rightX + 16, ry);
+  doc.text('+00233 0 302 502064', centerX - 60, ry, { align: 'left' });
   ry += 13;
   doc.setFont('helvetica', 'bold');
-  doc.text('F', rightX, ry);
+  doc.text('F   ', centerX - 78, ry);
   doc.setFont('helvetica', 'normal');
-  doc.text('+00233 0 302 502064', rightX + 16, ry);
+  doc.text('+00233 0 302 502064', centerX - 60, ry, { align: 'left' });
   ry += 13;
   doc.setFont('helvetica', 'bold');
-  doc.text('E', rightX, ry);
+  doc.text('E   ', centerX - 78, ry);
   doc.setFont('helvetica', 'normal');
-  doc.text('vfghana@visionfundghana.org', rightX + 16, ry);
+  doc.text('vfghana@visionfundghana.org', centerX - 60, ry, { align: 'left' });
 
+  // Logo alone, top-right corner
   try {
     doc.addImage(LOGO_MAIN_DATAURL, 'JPEG', pageWidth - margin - 110, 34, 110, 33);
   } catch (e) {}
 
-  y = 108;
+  y = 128;
   doc.setDrawColor(245, 166, 35);
   doc.setLineWidth(2);
   doc.line(margin, y, pageWidth - margin, y);
@@ -668,11 +694,20 @@ function generatePdfDoc() {
   var bodyRows = validRows.map(function(r) {
     return [formatDateDMY(r.date), r.chequeNo, r.payee, formatMoney(r.amount), amountInWords(r.amount), 'PAY'];
   });
+  var totalRowIndex = bodyRows.length;
   bodyRows.push(['', '', 'TOTAL', formatMoney(total), totalWords, '']);
+  var noticeRowIndex = bodyRows.length;
+  bodyRows.push([{
+    content: 'Do not honour any cheque presented to you outside this list of beneficiaries or an earlier one.',
+    colSpan: 6,
+    styles: { fontStyle: 'bold', halign: 'left' },
+  }]);
 
   doc.autoTable({
     startY: y,
-    head: [['DATE', 'CHEQUE NO.', 'PAYEE', 'AMOUNT\nIN FIGURES', 'AMOUNT IN WORDS', 'REMARKS']],
+    theme: 'grid',
+    rowPageBreak: 'avoid',
+    head: [['DATE', 'CHEQUE NO.', 'PAYEE', 'AMOUNT (GHS)', 'AMOUNT IN WORDS', 'REMARKS']],
     body: bodyRows,
     margin: { left: margin, right: margin },
     styles: { font: 'helvetica', fontSize: 8.5, cellPadding: 4, valign: 'middle' },
@@ -686,7 +721,7 @@ function generatePdfDoc() {
       5: { cellWidth: 45 },
     },
     didParseCell: function(data) {
-      if (data.row.index === bodyRows.length - 1) {
+      if (data.row.index === totalRowIndex) {
         data.cell.styles.fontStyle = 'bold';
       }
     },
@@ -700,24 +735,33 @@ function generatePdfDoc() {
   doc.text('Thank you.', margin, y);
   y += 40;
 
+  var sigBlockY = y;
+
+  // Left column: prepared-by signatory
   try {
-    doc.addImage(SIG_DATAURL, 'PNG', margin, y - 20, 70, 27);
+    doc.addImage(SIG_DATAURL, 'PNG', margin, sigBlockY - 20, 70, 27);
   } catch(e) {}
-  y += 14;
-
+  var leftY = sigBlockY + 14;
   doc.setFont('helvetica', 'bold');
-  doc.text(state.preparedBy, margin, y); y += 13;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.text(state.preparedByTitle, margin, y); y += 22;
-
   doc.setFontSize(10.5);
-  doc.text('Approved by:', margin, y); y += 14;
-  doc.setFont('helvetica', 'bold');
-  doc.text(state.approvedBy, margin, y); y += 13;
+  doc.text(state.preparedBy, margin, leftY); leftY += 13;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
-  doc.text(state.approvedByTitle, margin, y);
+  doc.text(state.preparedByTitle, margin, leftY);
+
+  // Right column: approved-by signatory (right-aligned)
+  var rightEdge = pageWidth - margin;
+  var rightY = sigBlockY;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10.5);
+  doc.text('Approved by:', rightEdge, rightY, { align: 'right' }); rightY += 14;
+  doc.setFont('helvetica', 'bold');
+  doc.text(state.approvedBy, rightEdge, rightY, { align: 'right' }); rightY += 13;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  doc.text(state.approvedByTitle, rightEdge, rightY, { align: 'right' });
+
+  y = Math.max(leftY, rightY) + 10;
 
   var pageCount = doc.internal.getNumberOfPages();
   for (var p = 1; p <= pageCount; p++) {
@@ -739,6 +783,13 @@ function generatePdfDoc() {
 }
 
 /* ---------- Generate handler ---------- */
+function librariesReady(format) {
+  if (format === 'docx') {
+    return !!(window.docx && window.docx.Document && window.docx.Packer && window.saveAs);
+  }
+  return !!(window.jspdf && window.jspdf.jsPDF);
+}
+
 function handleGenerate(format) {
   var err = validate();
   if (err) { showMessage(escapeHtml(err), 'error'); return; }
@@ -750,33 +801,48 @@ function handleGenerate(format) {
   btn.disabled = true;
   btn.innerHTML = 'Generating\u2026';
 
-  setTimeout(function() {
+  function restoreButton() {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
+
+  // Libraries load asynchronously; wait briefly for them if not yet ready
+  var waited = 0;
+  function attemptGenerate() {
+    if (!librariesReady(format)) {
+      waited += 150;
+      if (waited < 6000) {
+        setTimeout(attemptGenerate, 150);
+        return;
+      }
+      showMessage('The ' + (format === 'docx' ? 'Word' : 'PDF') + ' generator could not load. Check your internet connection and reload this file, then try again.', 'error');
+      restoreButton();
+      return;
+    }
     try {
       var filenameSafe = 'Cheque_Advice_' + state.releaseDate;
       if (format === 'docx') {
         generateDocxBlob().then(function(blob) {
           saveAs(blob, filenameSafe + '.docx');
           showMessage('Word document generated and downloaded.', 'success');
-          btn.disabled = false;
-          btn.innerHTML = originalHtml;
+          restoreButton();
         }).catch(function(e) {
           showMessage('Could not generate the Word document: ' + escapeHtml(e.message), 'error');
-          btn.disabled = false;
-          btn.innerHTML = originalHtml;
+          restoreButton();
         });
       } else {
         var doc = generatePdfDoc();
         doc.save(filenameSafe + '.pdf');
         showMessage('PDF generated and downloaded.', 'success');
-        btn.disabled = false;
-        btn.innerHTML = originalHtml;
+        restoreButton();
       }
     } catch (e) {
       showMessage('Something went wrong: ' + escapeHtml(e.message), 'error');
-      btn.disabled = false;
-      btn.innerHTML = originalHtml;
+      restoreButton();
     }
-  }, 50);
+  }
+
+  attemptGenerate();
 }
 
 /* ---------- Init ---------- */
